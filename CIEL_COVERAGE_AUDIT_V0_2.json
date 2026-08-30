@@ -1,0 +1,82 @@
+{
+  "schema": "CIEL_BENCHMARK_COVERAGE_AUDIT_V0_2",
+  "dataset": {
+    "path": "dataset/golden_v0_1.jsonl",
+    "tasks": 60,
+    "polish_tasks": 35,
+    "non_polish_tasks": 25,
+    "dataset_sha256": "6ad64afc4303ec2253a7e6d8f57f1ec4813b5dce1eaba1d6347f6767f6deee94"
+  },
+  "producer_stack": {
+    "repository": "AdrianLipa90/cielingo-canon",
+    "branch": "feat/agent-action-operator-family-v0.2",
+    "commit": "a286e077bc99d91c59fb9e8fbcd82c81a636ab9b",
+    "draft_pr": 21,
+    "base_pr": 20
+  },
+  "consumer_stack": {
+    "repository": "AdrianLipa90/Ciel-Semantic-Model-",
+    "branch": "feat/agent-action-signature-mirror-v0.2",
+    "commit": "74caaf8e7ebebcf0922dea9da51ac5cc1a441e0e",
+    "draft_pr": 30,
+    "base_pr": 29
+  },
+  "typed_surface_coverage": {
+    "previous_v0_2_relational_tasks": [
+      "F5-007",
+      "F6-001",
+      "F6-002",
+      "F6-004",
+      "F6-005",
+      "F6-006",
+      "F6-007",
+      "F6-008"
+    ],
+    "new_scope_safe_action_tasks": [
+      "F1-001",
+      "F2-001",
+      "F2-004",
+      "F2-006",
+      "F5-001"
+    ],
+    "typed_tasks_total": 13,
+    "typed_tasks_of_60": 0.21666666666666667,
+    "typed_polish_tasks": 13,
+    "typed_polish_tasks_of_35": 0.37142857142857144,
+    "delta_vs_original_pinned_v0_1": {
+      "from": 2,
+      "to": 13,
+      "absolute_tasks": 11,
+      "factor": 6.5
+    }
+  },
+  "scope_firewall": {
+    "negated_actions": "BLOCKED_FROM_ACTION_FAMILY",
+    "conditional_or_delayed_actions": "BLOCKED_FROM_ACTION_FAMILY",
+    "multi_action_surfaces": "BLOCKED_FROM_ACTION_FAMILY",
+    "new_action_execution_mapping": false,
+    "reason": "consumer scope/condition gate required before tool projection"
+  },
+  "grounding_and_execution": {
+    "card_identity_transport": "IMPLEMENTED_ON_PR20_PR29_STACK",
+    "benchmark_surface_alias_rescue": false,
+    "slot_id_as_identity": false,
+    "grounded_ready_count": "PENDING_EXACT_STACK_EXECUTION",
+    "reportable_ready_coverage": false
+  },
+  "validation": {
+    "producer_action_behavioral_harness": "12/12 PASS_ISOLATED",
+    "producer_action_signatures": "6/6 PASS_ISOLATED",
+    "semantic_action_mirror": "5/5 PASS_ISOLATED",
+    "producer_hosted_probe_run": 33327978166,
+    "producer_hosted_probe": "INFRA_FAILURE_BEFORE_STEPS",
+    "benchmark_grounding_boundary_ci_run": 33327694757,
+    "benchmark_grounding_boundary_ci": "PASS_PY311_PY312_PY313",
+    "private_component_full_suite": "UNTESTED"
+  },
+  "decision": {
+    "paid_b0_b4_run": "HOLD",
+    "next_gate": "SCOPE_CONDITION_CONSUMER_RECEIPT",
+    "reportable_v0_1": false
+  }
+}
