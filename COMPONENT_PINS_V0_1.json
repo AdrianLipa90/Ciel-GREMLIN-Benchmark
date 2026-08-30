@@ -5,29 +5,29 @@
     "gremlin": {
       "repository": "AdrianLipa90/GREMLIN",
       "branch": "feat/benchmark-supplied-evidence-v0.1",
-      "commit": "7b80db8dd7a553c77616427a91bade608e12b968",
+      "commit": "69f4670f1b4c618a964d2e246987aa8de6d61b09",
       "pr": 44,
-      "status": "CI_43_PASS_MERGEABLE_DRAFT"
+      "status": "CI_43_PASS_RECEIPTS_60_PASS_MERGEABLE_DRAFT"
     },
     "cielingo": {
       "repository": "AdrianLipa90/cielingo-canon",
       "branch": "feat/relation-event-hypergraph-v0.1",
       "commit": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
       "pr": 18,
-      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_INFRA_FAIL_BEFORE_STEPS"
+      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_RETRY_INFRA_FAIL_BEFORE_STEPS"
     },
     "ciel_semantic": {
       "repository": "AdrianLipa90/Ciel-Semantic-Model-",
       "branch": "feat/relation-event-hypergraph-bridge-v0.1",
       "commit": "67157523badc1460eefc18f75b75ff20500dcbc3",
       "pr": 27,
-      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_INFRA_FAIL_BEFORE_STEPS"
+      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_RETRY_INFRA_FAIL_BEFORE_STEPS"
     }
   },
   "reporting_gate": {
     "live_exploratory_run_allowed": true,
     "reportable_v0_1_result_requires_full_component_suite": true,
-    "gremlin_hosted_ci": "PASS_43_TESTS",
-    "private_ciel_hosted_ci": "INFRA_FAILURE_BEFORE_STEPS_NOT_CODE_FAIL"
+    "gremlin_hosted_ci": "PASS_43_TESTS_AND_60_RECEIPT_ARTIFACT",
+    "private_ciel_hosted_ci": "RETRY_INFRA_FAILURE_BEFORE_STEPS_NOT_CODE_FAIL"
   }
 }
