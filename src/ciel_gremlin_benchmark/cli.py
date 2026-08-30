@@ -10,6 +10,7 @@ from .experiment import compare_runs
 from .manifest import RunManifest, audit_comparability, file_sha256, load_manifest
 from .capture import capture_predictions
 from .openai_live import OpenAIResponsesAdapter, ReceiptBundleStore, UrllibOpenAIResponsesTransport
+from .preflight import preflight_live
 from .runner import BenchmarkRunner, ReplayAdapter
 from .sanity import run_metric_sanity
 
@@ -152,6 +153,35 @@ def _cmd_capture_openai(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_preflight_live(args: argparse.Namespace) -> int:
+    prompt_paths = {
+        "B0": args.prompt_b0,
+        "B1": args.prompt_b1_b3,
+        "B3": args.prompt_b1_b3,
+        "B2": args.prompt_b2_b4,
+        "B4": args.prompt_b2_b4,
+    }
+    receipt_paths = {
+        key: value
+        for key, value in {
+            "B2": args.receipts_b2,
+            "B3": args.receipts_b3,
+            "B4": args.receipts_b4,
+        }.items()
+        if value
+    }
+    report = preflight_live(
+        dataset=args.dataset,
+        run_root=args.run_root,
+        prompt_paths=prompt_paths,
+        receipt_paths=receipt_paths,
+        api_key_env=args.api_key_env,
+        require_api_key=not args.allow_missing_api_key,
+    )
+    _print_json(report.to_dict())
+    return 0 if report.status == "PASS" else 1
+
+
 def _cmd_audit_manifests(args: argparse.Namespace) -> int:
     manifests = [load_manifest(path) for path in args.manifests]
     issues = audit_comparability(manifests)
@@ -254,6 +284,22 @@ def build_parser() -> argparse.ArgumentParser:
     capture_openai.add_argument("--timeout-s", type=float, default=120.0)
     capture_openai.add_argument("--model-parameters-json", default="{}")
     capture_openai.set_defaults(func=_cmd_capture_openai)
+
+    preflight = sub.add_parser(
+        "preflight-live",
+        help="fail closed unless a B0-B4 live run is ready to start",
+    )
+    preflight.add_argument("--dataset", required=True)
+    preflight.add_argument("--run-root", required=True)
+    preflight.add_argument("--prompt-b0", required=True)
+    preflight.add_argument("--prompt-b1-b3", required=True)
+    preflight.add_argument("--prompt-b2-b4", required=True)
+    preflight.add_argument("--receipts-b2")
+    preflight.add_argument("--receipts-b3")
+    preflight.add_argument("--receipts-b4")
+    preflight.add_argument("--api-key-env", default="OPENAI_API_KEY")
+    preflight.add_argument("--allow-missing-api-key", action="store_true")
+    preflight.set_defaults(func=_cmd_preflight_live)
 
     audit = sub.add_parser(
         "audit-manifests",
