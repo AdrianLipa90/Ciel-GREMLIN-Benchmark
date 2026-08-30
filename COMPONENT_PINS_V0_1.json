@@ -11,23 +11,30 @@
     },
     "cielingo": {
       "repository": "AdrianLipa90/cielingo-canon",
-      "branch": "feat/relation-event-hypergraph-v0.1",
-      "commit": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
-      "pr": 18,
-      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_RETRY_INFRA_FAIL_BEFORE_STEPS"
+      "branch": "feat/relation-card-identity-transport-v0.1",
+      "commit": "7d698b276960d0e8067e30adbdab22cdea964f04",
+      "pr": 20,
+      "status": "STACKED_DRAFT_MERGEABLE_CARD_ID_TRANSPORT_ISOLATED_10_PASS_FULL_SUITE_UNTESTED"
     },
     "ciel_semantic": {
       "repository": "AdrianLipa90/Ciel-Semantic-Model-",
-      "branch": "feat/relation-event-hypergraph-bridge-v0.1",
-      "commit": "67157523badc1460eefc18f75b75ff20500dcbc3",
-      "pr": 27,
-      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_RETRY_INFRA_FAIL_BEFORE_STEPS"
+      "branch": "feat/relation-card-identity-bridge-v0.1",
+      "commit": "0435ce8ecfd97f09faa0ea702a847d62dd91630a",
+      "pr": 29,
+      "status": "STACKED_DRAFT_MERGEABLE_CARD_ID_GROUNDING_ISOLATED_10_PASS_ATLAS_3_PASS_FULL_SUITE_UNTESTED"
     }
+  },
+  "execution_path": {
+    "producer": "RegionalSolveResult.candidates.card_id -> RelationEntityCardBindings -> SentenceEquation.relation_entity_card_bindings",
+    "consumer": "exact hypergraph/card receipt validation -> source-atlas card_id corroboration -> RelationEntityGroundingBundle",
+    "benchmark": "RelationEntityGroundingBundle -> execution argument bindings",
+    "slot_id_authority": false,
+    "surface_rescue_after_failed_producer_identity": false
   },
   "reporting_gate": {
     "live_exploratory_run_allowed": true,
     "reportable_v0_1_result_requires_full_component_suite": true,
     "gremlin_hosted_ci": "PASS_43_TESTS_AND_60_RECEIPT_ARTIFACT",
-    "private_ciel_hosted_ci": "RETRY_INFRA_FAILURE_BEFORE_STEPS_NOT_CODE_FAIL"
+    "private_ciel_hosted_ci": "CURRENT_CARD_ID_STACK_FULL_SUITE_UNTESTED; EARLIER_HOSTED_RUNS_FAILED_BEFORE_STEPS"
   }
 }
