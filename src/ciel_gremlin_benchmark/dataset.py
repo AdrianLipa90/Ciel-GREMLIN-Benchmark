@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Iterable
 
+from .manifest import file_sha256
 from .schema import Family, Task
 
 
@@ -51,3 +52,8 @@ def family_counts(tasks: Iterable[Task]) -> dict[str, int]:
     for task in tasks:
         counts[task.family.value] += 1
     return counts
+
+
+def dataset_sha256(path: str | Path) -> str:
+    """SHA-256 of the exact dataset bytes used for a run manifest."""
+    return file_sha256(path)

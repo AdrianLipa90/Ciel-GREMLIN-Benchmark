@@ -46,11 +46,14 @@ def score_prediction(task: Task, prediction: Prediction) -> TaskScore:
     if gt.decision is Decision.EXECUTE:
         expected_args = dict(gt.arguments)
         actual_args = dict(prediction.arguments)
-        argument_fields_total = len(expected_args)
+        argument_keys = set(expected_args) | set(actual_args)
+        sentinel = object()
+        argument_fields_total = len(argument_keys)
         argument_fields_wrong = sum(
-            1 for key, value in expected_args.items() if actual_args.get(key) != value
+            1
+            for key in argument_keys
+            if expected_args.get(key, sentinel) != actual_args.get(key, sentinel)
         )
-        argument_fields_wrong += len(set(actual_args) - set(expected_args))
         tool_error = prediction.decision is Decision.EXECUTE and prediction.tool != gt.tool
         exact_action_correct = (
             prediction.decision is Decision.EXECUTE

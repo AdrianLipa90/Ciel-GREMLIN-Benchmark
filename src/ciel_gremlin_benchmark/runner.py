@@ -8,6 +8,7 @@ from typing import Mapping, Protocol
 from .sandbox import ExecutionSandbox
 from .schema import Prediction, Task
 from .scoring import AggregateMetrics, aggregate_scores, score_prediction
+from .systems import validate_prediction_contract
 
 
 class SystemAdapter(Protocol):
@@ -55,8 +56,14 @@ class ReplayAdapter:
 
 
 class BenchmarkRunner:
-    def __init__(self, sandbox: ExecutionSandbox | None = None):
+    def __init__(
+        self,
+        sandbox: ExecutionSandbox | None = None,
+        *,
+        enforce_system_contract: bool = False,
+    ):
         self.sandbox = sandbox or ExecutionSandbox()
+        self.enforce_system_contract = bool(enforce_system_contract)
 
     def run(self, tasks: list[Task], adapter: SystemAdapter) -> tuple[list[dict], AggregateMetrics]:
         records: list[dict] = []
@@ -69,6 +76,12 @@ class BenchmarkRunner:
                 raise ValueError(
                     f"{task.task_id}: invalid prediction: " + "; ".join(issues)
                 )
+            if self.enforce_system_contract:
+                contract_issues = validate_prediction_contract(prediction)
+                if contract_issues:
+                    raise ValueError(
+                        f"{task.task_id}: system contract violation: " + "; ".join(contract_issues)
+                    )
 
             sandbox_record = self.sandbox.execute(task, prediction)
             score = score_prediction(task, prediction)

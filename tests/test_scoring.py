@@ -114,6 +114,23 @@ def test_aggregate_metrics_and_reliability_bounds():
     assert 0.0 <= metrics.reliability_score <= 1.0
 
 
+def test_argument_error_rate_counts_unexpected_fields_in_denominator():
+    task = make_task()
+    prediction = Prediction(
+        system_id="B4",
+        task_id="T",
+        decision=Decision.EXECUTE,
+        tool="send_email",
+        arguments={"recipient": "Alice", "document": "report", "guessed": True},
+    )
+    score = score_prediction(task, prediction)
+    assert score.argument_fields_total == 3
+    assert score.argument_fields_wrong == 1
+    metrics = aggregate_scores([score])
+    assert metrics.argument_error_rate == pytest.approx(1 / 3)
+    assert 0.0 <= metrics.argument_error_rate <= 1.0
+
+
 def test_mixed_system_ids_fail_closed():
     task = make_task()
     one = score_prediction(
