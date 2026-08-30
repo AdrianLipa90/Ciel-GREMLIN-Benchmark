@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .capture import capture_predictions
+from .ciel_receipts import write_ciel_receipt_bundle
 from .dataset import load_tasks
 from .dynamic_live import DynamicOpenAIResponsesAdapter
 from .dynamic_preflight import dynamic_preflight_live
@@ -31,6 +32,13 @@ def _load_rows(path: str | Path) -> dict[str, Mapping[str, Any]]:
                 raise ValueError(f"{path}:{line_no}: invalid/duplicate task_id")
             out[task_id] = raw
     return out
+
+
+def _cmd_build_ciel_receipts(args: argparse.Namespace) -> int:
+    tasks = load_tasks(args.dataset)
+    result = write_ciel_receipt_bundle(tasks, args.output)
+    _print({"status": "PASS", **result})
+    return 0
 
 
 def _cmd_merge_receipts(args: argparse.Namespace) -> int:
@@ -133,6 +141,11 @@ def _cmd_capture(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m ciel_gremlin_benchmark.dynamic_cli")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    build_ciel = sub.add_parser("build-ciel-receipts")
+    build_ciel.add_argument("--dataset", required=True)
+    build_ciel.add_argument("--output", required=True)
+    build_ciel.set_defaults(func=_cmd_build_ciel_receipts)
 
     merge = sub.add_parser("merge-receipts")
     merge.add_argument("--gremlin", required=True)
