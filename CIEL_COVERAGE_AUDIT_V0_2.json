@@ -9,17 +9,21 @@
   },
   "producer_stack": {
     "repository": "AdrianLipa90/cielingo-canon",
-    "branch": "feat/agent-action-operator-family-v0.2",
-    "commit": "a286e077bc99d91c59fb9e8fbcd82c81a636ab9b",
-    "draft_pr": 21,
-    "base_pr": 20
+    "action_family_branch": "feat/agent-action-operator-family-v0.2",
+    "action_family_commit": "a286e077bc99d91c59fb9e8fbcd82c81a636ab9b",
+    "action_family_pr": 21,
+    "scope_branch": "feat/action-scope-condition-receipt-v0.1",
+    "scope_commit": "0d71838744def88fb148ce72c82d60fa6f66ca8b",
+    "scope_pr": 23
   },
   "consumer_stack": {
     "repository": "AdrianLipa90/Ciel-Semantic-Model-",
-    "branch": "feat/agent-action-signature-mirror-v0.2",
-    "commit": "74caaf8e7ebebcf0922dea9da51ac5cc1a441e0e",
-    "draft_pr": 30,
-    "base_pr": 29
+    "action_mirror_branch": "feat/agent-action-signature-mirror-v0.2",
+    "action_mirror_commit": "74caaf8e7ebebcf0922dea9da51ac5cc1a441e0e",
+    "action_mirror_pr": 30,
+    "scope_gate_branch": "feat/action-scope-condition-gate-v0.1",
+    "scope_gate_commit": "883276ec4b11d8d137e3aa00f581d7642454948a",
+    "scope_gate_pr": 33
   },
   "typed_surface_coverage": {
     "previous_v0_2_relational_tasks": [
@@ -51,32 +55,47 @@
     }
   },
   "scope_firewall": {
-    "negated_actions": "BLOCKED_FROM_ACTION_FAMILY",
-    "conditional_or_delayed_actions": "BLOCKED_FROM_ACTION_FAMILY",
-    "multi_action_surfaces": "BLOCKED_FROM_ACTION_FAMILY",
-    "new_action_execution_mapping": false,
-    "reason": "consumer scope/condition gate required before tool projection"
+    "producer_receipt_schema": "CIEL_ACTION_SCOPE_CONDITION_V0_1",
+    "consumer_gate_schema": "CIEL_ACTION_SCOPE_GATE_V0_1",
+    "safe_requirement": "PRODUCER_AND_CONSUMER_EXACT_SCOPE_SAFE_AGREEMENT",
+    "negated_actions": "BLOCK_POLICY_REJECT",
+    "conditional_actions": "BLOCK_MISSING_EVIDENCE",
+    "delayed_actions": "BLOCK_MISSING_EVIDENCE",
+    "qualified_actions": "BLOCK_MISSING_EVIDENCE",
+    "multi_action_surfaces": "BLOCK_AMBIGUOUS",
+    "rehashed_forged_safe_status": "BLOCK_RECOMPUTATION_MISMATCH",
+    "producer_scope_authority": false
   },
   "grounding_and_execution": {
-    "card_identity_transport": "IMPLEMENTED_ON_PR20_PR29_STACK",
+    "card_identity_transport": "IMPLEMENTED_ON_PR20_PR29_LINEAGE",
     "benchmark_surface_alias_rescue": false,
     "slot_id_as_identity": false,
-    "grounded_ready_count": "PENDING_EXACT_STACK_EXECUTION",
+    "new_action_execution_mapping": true,
+    "mapped_actions": {
+      "SEND_EMAIL": "send_email",
+      "ARCHIVES": "archive_file",
+      "DELETES": "delete_file",
+      "UPDATES_RECORD": "update_record",
+      "APPROVES_SUPPLIER": "approve_supplier",
+      "CREATES_CONTRACT_WITH": "create_contract"
+    },
+    "mapping_requires_valid_scope_gate": true,
+    "grounded_ready_count": "PENDING_EXACT_SCOPE_STACK_EXECUTION",
     "reportable_ready_coverage": false
   },
   "validation": {
     "producer_action_behavioral_harness": "12/12 PASS_ISOLATED",
     "producer_action_signatures": "6/6 PASS_ISOLATED",
     "semantic_action_mirror": "5/5 PASS_ISOLATED",
-    "producer_hosted_probe_run": 33327978166,
-    "producer_hosted_probe": "INFRA_FAILURE_BEFORE_STEPS",
-    "benchmark_grounding_boundary_ci_run": 33327694757,
-    "benchmark_grounding_boundary_ci": "PASS_PY311_PY312_PY313",
+    "scope_producer_consumer_contract": "PASS_ISOLATED_INCLUDING_REHASHED_FORGERY_NEGATIVE_CONTROL",
+    "benchmark_scope_projection_ci_run": 33329924212,
+    "benchmark_scope_projection_ci": "PASS_PY311_PY312_PY313",
+    "benchmark_scope_projection_head": "e9f42e2ea729d866387564ac7cad157ee9f8b192",
     "private_component_full_suite": "UNTESTED"
   },
   "decision": {
     "paid_b0_b4_run": "HOLD",
-    "next_gate": "SCOPE_CONDITION_CONSUMER_RECEIPT",
+    "next_gate": "EXACT_SCOPE_STACK_GROUNDING_AND_READY_COVERAGE",
     "reportable_v0_1": false
   }
 }
