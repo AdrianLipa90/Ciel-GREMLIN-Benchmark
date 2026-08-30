@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Callable, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping
 
 from . import ciel_action_scope as scoped
 from . import ciel_receipts as base
@@ -15,6 +15,17 @@ SCHEMA = "CIEL_WORLD_STATE_SCOPED_BENCHMARK_RECEIPT_V0_2"
 WORLD_INDEX_SCHEMA = "CIEL_WORLD_STATE_INDEX_V0_1"
 WORLD_GROUNDING_SCHEMA = "CIEL_RELATION_WORLD_STATE_GROUNDING_BUNDLE_V0_1"
 _ALLOWED_SOURCE = frozenset({"BOUND", "AMBIGUOUS", "UNBOUND", "IMPLICIT"})
+_ALLOWED_RESOLUTION = frozenset({
+    "RESOLVED_CARD_ID",
+    "RESOLVED_WORLD_STATE_INDEX",
+    "RESOLVED_IMPLICIT_SPEAKER",
+    "AMBIGUOUS_PRODUCER_IDENTITY",
+    "AMBIGUOUS_CARD_WORLD",
+    "AMBIGUOUS_WORLD_STATE_INDEX",
+    "UNRESOLVED_CARD_ID",
+    "UNRESOLVED_WORLD_STATE",
+    "UNRESOLVED_IMPLICIT_SPEAKER",
+})
 
 
 def _canonical_json(value: Any) -> str:
@@ -55,6 +66,8 @@ def _validate_world_state_index(index: Mapping[str, Any] | None) -> list[str]:
         for row in records
         if isinstance(row, Mapping)
     ]
+    if len(ids) != len(records):
+        issues.append("world_state_index records must contain objects")
     if any(not item for item in ids):
         issues.append("world_state_index canonical IDs must be non-empty")
     if len(set(ids)) != len(ids):
@@ -108,13 +121,16 @@ def validate_world_grounding_payload(
         issues.append("relation world grounding entries must be a list")
         entries = []
     graph_entities = graph.get("entities")
-    graph_ids = {
-        str(row.get("entity_id"))
-        for row in graph_entities
-        if isinstance(graph_entities, list)
-        for row in graph_entities
-        if isinstance(row, Mapping) and row.get("entity_id")
-    }
+    graph_ids: set[str] = set()
+    if not isinstance(graph_entities, list):
+        issues.append("relation hypergraph entities must be a list")
+    else:
+        for row in graph_entities:
+            if not isinstance(row, Mapping) or not row.get("entity_id"):
+                issues.append("relation hypergraph entity is invalid")
+                continue
+            graph_ids.add(str(row["entity_id"]))
+
     entry_ids: list[str] = []
     for index, entry in enumerate(entries):
         if not isinstance(entry, Mapping):
@@ -128,6 +144,8 @@ def validate_world_grounding_payload(
         if source_status not in _ALLOWED_SOURCE:
             issues.append(f"relation world grounding entries[{index}] source_status invalid")
         resolution = str(entry.get("resolution_status") or "")
+        if resolution not in _ALLOWED_RESOLUTION:
+            issues.append(f"relation world grounding entries[{index}] resolution_status invalid")
         resolved = resolution.startswith("RESOLVED_")
         world_entity = entry.get("world_entity")
         if resolved and (not isinstance(world_entity, str) or not world_entity):
@@ -135,7 +153,7 @@ def validate_world_grounding_payload(
         if not resolved and world_entity is not None:
             issues.append(f"relation world grounding entries[{index}] unresolved with world_entity")
         card_id = entry.get("card_id")
-        if source_status == "BOUND" and not isinstance(card_id, str):
+        if source_status == "BOUND" and (not isinstance(card_id, str) or not card_id):
             issues.append(f"relation world grounding entries[{index}] BOUND requires card_id")
         if source_status != "BOUND" and card_id is not None:
             issues.append(f"relation world grounding entries[{index}] non-BOUND carries card_id")
