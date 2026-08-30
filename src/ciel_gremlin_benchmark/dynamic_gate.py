@@ -59,6 +59,8 @@ def validate_ciel_receipt(receipt: Mapping[str, Any]) -> list[str]:
         return ["CIEL receipt must be an object"]
     if receipt.get("candidate_only") is not True:
         issues.append("CIEL receipt must remain candidate_only=true")
+    if receipt.get("ground_truth_used") is not False:
+        issues.append("CIEL receipt must explicitly declare ground_truth_used=false")
     if not _is_sha256(receipt.get("source_commitment")):
         issues.append("CIEL receipt source_commitment must be SHA-256")
 
@@ -141,8 +143,8 @@ class DynamicGateResult:
 class DynamicCIELExecutionGate:
     """Evaluate the model proposal against a pre-model CIEL semantic contract.
 
-    The gate never receives benchmark ground truth and never repairs a proposal.
-    It may only preserve it (ALLOW) or stop execution with ASK/REJECT/DEFER.
+    The gate never reads benchmark ground truth and never repairs a proposal. It
+    may only preserve it (ALLOW) or stop execution with ASK/REJECT/DEFER.
     """
 
     def evaluate(
@@ -153,7 +155,6 @@ class DynamicCIELExecutionGate:
         arguments: Mapping[str, Any],
         ciel_receipt: Mapping[str, Any],
     ) -> dict[str, Any]:
-        del task  # Deliberately unavailable to decision logic beyond proposal context.
         issues = validate_ciel_receipt(ciel_receipt)
         if issues:
             raise ValueError("invalid CIEL receipt: " + "; ".join(issues))
@@ -163,6 +164,9 @@ class DynamicCIELExecutionGate:
         proposal_commitment = proposal_sha256(decision, tool, arguments)
         source_commitment = str(ciel_receipt["source_commitment"])
         contract_commitment = str(ciel_receipt["execution_contract_sha256"])
+
+        if status == "READY" and str(contract.get("tool")) not in task.allowed_tools:
+            raise ValueError("CIEL READY contract tool is not admitted by task.allowed_tools")
 
         def result(action: str, *reasons: str) -> dict[str, Any]:
             return DynamicGateResult(

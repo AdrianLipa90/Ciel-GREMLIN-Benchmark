@@ -4,9 +4,9 @@ Status: benchmark candidate protocol for proposal-bound semantic gating.
 
 ## Purpose
 
-B3/B4 must measure a semantic firewall that evaluates the model's **actual proposed action**, not a task-level action selected before the model runs.
+B3/B4 measure a semantic firewall that evaluates the model's **actual proposed action**, not a task-level action selected before the model runs.
 
-The reportable path is therefore:
+The reportable path is:
 
 ```text
 user/task input
@@ -23,7 +23,7 @@ GREMLIN remains pre-model evidence context in B2/B4. CIEL remains post-model con
 
 A dynamic run rejects any input receipt bundle that already contains an `execution_gate` action. The gate action must be created only after the model proposal exists.
 
-The gate does not receive benchmark ground truth. Tests explicitly mutate ground truth while holding the task surface, semantic receipt and proposal fixed and require an identical gate result.
+The CIEL receipt must explicitly carry `ground_truth_used=false`. The gate itself emits the same flag. Tests mutate benchmark ground truth while holding the task surface, semantic receipt and proposal fixed and require an identical gate result.
 
 ## CIEL execution contract
 
@@ -32,6 +32,7 @@ A CIEL receipt used by the dynamic gate carries:
 ```json
 {
   "candidate_only": true,
+  "ground_truth_used": false,
   "source_commitment": "<sha256 from the CIEL semantic source receipt>",
   "execution_contract": {
     "schema": "CIEL_EXECUTION_CONTRACT_V0_1",
@@ -49,7 +50,7 @@ A CIEL receipt used by the dynamic gate carries:
 }
 ```
 
-The projection must be generated from CIEL semantic analysis and world-state bindings without access to benchmark ground truth.
+The projection must be generated from CIEL semantic analysis and world-state bindings without access to benchmark ground truth. A `READY` tool must also occur in the task's declared `allowed_tools`; otherwise the run aborts rather than silently widening authority.
 
 Admitted semantic statuses are:
 
@@ -86,6 +87,17 @@ Every gated proposal emits `CIEL_DYNAMIC_EXECUTION_GATE_V0_1` containing:
 - `ground_truth_used=false`.
 
 The proposal hash is checked again by the adapter before the action is applied.
+
+## Ablation integrity
+
+Dynamic preflight rejects:
+
+- B2 bundles containing CIEL;
+- B3 bundles containing GREMLIN;
+- B3/B4 bundles containing any precomputed `execution_gate`;
+- incomplete task coverage;
+- invalid or tampered CIEL contract commitments;
+- missing API credentials for a network run.
 
 ## Legacy path
 

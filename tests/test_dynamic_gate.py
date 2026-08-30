@@ -57,6 +57,7 @@ def ciel_receipt(status: str = "READY") -> dict:
     }
     return {
         "candidate_only": True,
+        "ground_truth_used": False,
         "source_commitment": "a" * 64,
         "execution_contract": contract,
         "execution_contract_sha256": execution_contract_sha256(contract),
@@ -181,6 +182,29 @@ def test_tampered_ciel_contract_fails_before_network(tmp_path: Path) -> None:
     assert transport.payloads == []
 
 
+def test_receipt_must_explicitly_disclaim_ground_truth_use(tmp_path: Path) -> None:
+    receipt = ciel_receipt()
+    del receipt["ground_truth_used"]
+    transport = FakeTransport(structured_response())
+    store = write_bundle(tmp_path / "r.jsonl", ciel=receipt)
+    adapter = DynamicOpenAIResponsesAdapter(
+        system_id="B3", model_id="model-x", prompt="p", transport=transport, receipt_store=store
+    )
+    with pytest.raises(ValueError, match="ground_truth_used=false"):
+        adapter.predict(task())
+    assert transport.payloads == []
+
+
+def test_ready_contract_tool_must_exist_in_allowed_tools() -> None:
+    receipt = ciel_receipt()
+    receipt["execution_contract"]["tool"] = "delete_file"
+    receipt["execution_contract_sha256"] = execution_contract_sha256(receipt["execution_contract"])
+    with pytest.raises(ValueError, match="not admitted by task.allowed_tools"):
+        DynamicCIELExecutionGate().evaluate(
+            task(), Decision.EXECUTE, "delete_file", {"sender": "USER"}, receipt
+        )
+
+
 def test_b4_gremlin_is_pre_model_but_ciel_is_post_model_only(tmp_path: Path) -> None:
     transport = FakeTransport(structured_response())
     store = write_bundle(
@@ -212,10 +236,7 @@ def test_gate_does_not_consult_task_ground_truth() -> None:
         ground_truth=GroundTruth(decision=Decision.REJECT),
     )
     receipt = ciel_receipt()
-    a = gate.evaluate(base, Decision.EXECUTE, "transfer_object", {
-        "sender": "USER", "recipient": "Zosia", "object": "book"
-    }, receipt)
-    b = gate.evaluate(changed_truth, Decision.EXECUTE, "transfer_object", {
-        "sender": "USER", "recipient": "Zosia", "object": "book"
-    }, receipt)
+    proposal = {"sender": "USER", "recipient": "Zosia", "object": "book"}
+    a = gate.evaluate(base, Decision.EXECUTE, "transfer_object", proposal, receipt)
+    b = gate.evaluate(changed_truth, Decision.EXECUTE, "transfer_object", proposal, receipt)
     assert a == b
