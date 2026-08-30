@@ -11,6 +11,7 @@ from .schema import Task
 
 SCHEMA = "CIEL_NATIVE_BENCHMARK_RECEIPT_V0_1"
 ANALYSIS_SCHEMA = "CIEL_NATIVE_ANALYSIS_V0_1"
+GROUNDING_SCHEMA = "CIEL_RELATION_ENTITY_GROUNDING_BUNDLE_V0_1"
 
 _OPERATOR_TO_TOOL: dict[str, str] = {
     "GIVES": "transfer_object",
@@ -81,6 +82,7 @@ def _sha256_json(value: Any) -> str:
 
 
 def _collect_world_strings(value: Any) -> set[str]:
+    """Collect runtime-observable world strings without using benchmark truth."""
     out: set[str] = set()
     if isinstance(value, Mapping):
         for key, child in value.items():
@@ -95,34 +97,31 @@ def _collect_world_strings(value: Any) -> set[str]:
     return out
 
 
-def _canonical_world_entity(label: str, world_state: Mapping[str, Any]) -> str | None:
-    text = str(label).strip()
-    if not text:
-        return None
+def _load_grounding_atlas(repo_root: Path, load_atlas_cards: Callable[[Path, str], list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Load the PL+EN runtime atlas used for shared-card world grounding.
 
-    speaker = world_state.get("speaker")
-    if text.casefold() in {"ja", "@speaker", "@implicit_subject"} and isinstance(speaker, str) and speaker:
-        return speaker
-
-    candidates = _collect_world_strings(world_state)
-    exact = [candidate for candidate in candidates if candidate.casefold() == text.casefold()]
-    if len(exact) == 1:
-        return exact[0]
-
-    aliases = world_state.get("aliases")
-    if isinstance(aliases, Mapping):
-        matches = [
-            str(canonical)
-            for canonical, surface in aliases.items()
-            if isinstance(surface, str) and surface.casefold() == text.casefold()
-        ]
-        if len(matches) == 1:
-            return matches[0]
-    return None
+    The source-language corroboration performed by Semantic Model remains
+    language-specific. The combined view is needed only so a world entity may
+    carry the same card identity in another supported language.
+    """
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for language_id in ("pl", "en"):
+        for row in load_atlas_cards(repo_root, language_id):
+            key = (
+                str(row.get("card_id") or ""),
+                str(row.get("language_id") or ""),
+                str(row.get("lemma") or ""),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append(row)
+    return rows
 
 
 def native_ciel_analysis(task: Task) -> Mapping[str, Any]:
-    """Run the pinned CIELingo -> Semantic validation path without benchmark truth."""
+    """Run the pinned CIELingo -> Semantic validation/grounding path without truth."""
     if task.language.lower() not in {"pl", "polish"}:
         return {
             "schema": ANALYSIS_SCHEMA,
@@ -136,7 +135,9 @@ def native_ciel_analysis(task: Task) -> Mapping[str, Any]:
         import cielingo_core
         from cielingo_core.language_spaces.pl.solver import PolishRegionalSolver
         from cielingo_core.lingophysics.sentence_equation import calculate_sentence_equation
+        from cielingo_core.regional.simple_solver_utils import load_atlas_cards
         from ciel_semantic_model.relation_hypergraph_bridge import validate_relation_hypergraph
+        from ciel_semantic_model.relation_entity_card_bridge import ground_relation_entities
     except ImportError as exc:
         raise RuntimeError(
             "Pinned CIELingo and Ciel-Semantic-Model packages are required to build CIEL receipts"
@@ -150,6 +151,16 @@ def native_ciel_analysis(task: Task) -> Mapping[str, Any]:
         raise ValueError("CIEL SentenceEquation validation failed: " + "; ".join(equation_issues))
     equation_payload = equation.to_dict()
     hypergraph = validate_relation_hypergraph(equation_payload)
+
+    atlas_cards = _load_grounding_atlas(repo_root, load_atlas_cards)
+    raw_speaker = task.world_state.get("speaker") if isinstance(task.world_state, Mapping) else None
+    speaker = raw_speaker if isinstance(raw_speaker, str) and raw_speaker else None
+    grounding = ground_relation_entities(
+        equation_payload,
+        world_entities=sorted(_collect_world_strings(task.world_state)),
+        atlas_cards=atlas_cards,
+        speaker=speaker,
+    )
     return {
         "schema": ANALYSIS_SCHEMA,
         "language": task.language,
@@ -157,6 +168,7 @@ def native_ciel_analysis(task: Task) -> Mapping[str, Any]:
         "status": "CIEL_ANALYSIS_COMPLETE",
         "sentence_equation": equation_payload,
         "relation_hypergraph_validation": hypergraph.to_dict(),
+        "relation_entity_grounding": None if grounding is None else grounding.to_dict(),
         "ground_truth_used": False,
     }
 
@@ -173,8 +185,56 @@ def _blocking_contract(status: str, reason: str) -> dict[str, Any]:
     }
 
 
+def _grounding_entries(
+    equation: Mapping[str, Any],
+    grounding: Mapping[str, Any],
+) -> dict[str, Mapping[str, Any]] | None:
+    """Admit a grounding bundle only when it is continuous with the equation."""
+    if grounding.get("schema") != GROUNDING_SCHEMA:
+        return None
+    if grounding.get("candidate_only") is not True:
+        return None
+
+    graph = equation.get("relation_hypergraph")
+    cards = equation.get("relation_entity_card_bindings")
+    if not isinstance(graph, Mapping) or not isinstance(cards, Mapping):
+        return None
+    if grounding.get("equation_id") != equation.get("equation_id"):
+        return None
+    if grounding.get("language_id") != equation.get("language_id"):
+        return None
+    if grounding.get("relation_hypergraph_commitment") != graph.get("commitment"):
+        return None
+    if grounding.get("card_bindings_commitment") != cards.get("commitment"):
+        return None
+
+    entries = grounding.get("entries")
+    if not isinstance(entries, list):
+        return None
+    by_id: dict[str, Mapping[str, Any]] = {}
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            return None
+        entity_id = str(entry.get("entity_id") or "")
+        if not entity_id or entity_id in by_id:
+            return None
+        by_id[entity_id] = entry
+    return by_id
+
+
+def _resolved_world_entity(entry: Mapping[str, Any]) -> str | None:
+    grounding = entry.get("grounding")
+    if not isinstance(grounding, Mapping):
+        return None
+    status = str(grounding.get("status") or "")
+    world_entity = grounding.get("world_entity")
+    if not status.startswith("RESOLVED_") or not isinstance(world_entity, str) or not world_entity:
+        return None
+    return world_entity
+
+
 def project_execution_contract(task: Task, analysis: Mapping[str, Any]) -> dict[str, Any]:
-    """Project only semantics established by the native analysis and world state."""
+    """Project only semantics admitted by CIEL and Semantic Model receipts."""
     if analysis.get("ground_truth_used") is not False:
         raise ValueError("CIEL analysis must explicitly declare ground_truth_used=false")
     if analysis.get("status") != "CIEL_ANALYSIS_COMPLETE":
@@ -195,6 +255,13 @@ def project_execution_contract(task: Task, analysis: Mapping[str, Any]) -> dict[
     entities = graph.get("entities")
     if not isinstance(events, list) or len(events) != 1 or not isinstance(incidences, list) or not isinstance(entities, list):
         return _blocking_contract("AMBIGUOUS", "RELATION_EVENT_CARDINALITY_UNRESOLVED")
+
+    grounding = analysis.get("relation_entity_grounding")
+    if not isinstance(grounding, Mapping):
+        return _blocking_contract("AMBIGUOUS", "RELATION_ENTITY_GROUNDING_ABSENT")
+    grounding_by_id = _grounding_entries(equation, grounding)
+    if grounding_by_id is None:
+        return _blocking_contract("AMBIGUOUS", "RELATION_ENTITY_GROUNDING_CONTINUITY_FAIL")
 
     event = events[0]
     if not isinstance(event, Mapping):
@@ -220,12 +287,20 @@ def project_execution_contract(task: Task, analysis: Mapping[str, Any]) -> dict[
         argument_name = role_map.get(str(incidence.get("operator_role") or ""))
         if argument_name is None:
             continue
-        entity = entity_by_id.get(str(incidence.get("entity_id") or ""))
+        entity_id = str(incidence.get("entity_id") or "")
+        entity = entity_by_id.get(entity_id)
         if not isinstance(entity, Mapping):
             return _blocking_contract("AMBIGUOUS", "INCIDENCE_ENTITY_UNRESOLVED")
-        canonical = _canonical_world_entity(str(entity.get("label") or ""), task.world_state)
+        entry = grounding_by_id.get(entity_id)
+        if entry is None:
+            return _blocking_contract("AMBIGUOUS", f"GROUNDING_ENTRY_MISSING:{argument_name}")
+        canonical = _resolved_world_entity(entry)
         if canonical is None:
-            return _blocking_contract("AMBIGUOUS", f"WORLD_ENTITY_UNRESOLVED:{argument_name}")
+            source_status = str(entry.get("source_status") or "UNRESOLVED")
+            return _blocking_contract(
+                "AMBIGUOUS",
+                f"WORLD_ENTITY_UNRESOLVED:{argument_name}:{source_status}",
+            )
         bindings[argument_name] = canonical
 
     if operator in {"SPEAKS_ABOUT", "CONNECTED_WITH", "BELONGS_TO"}:
@@ -251,7 +326,7 @@ def project_execution_contract(task: Task, analysis: Mapping[str, Any]) -> dict[
         "required_arguments": list(required),
         "argument_bindings": bindings,
         "allow_extra_arguments": False,
-        "reason": "CIEL_TYPED_RELATION_AND_WORLD_BINDINGS_COMPLETE",
+        "reason": "CIEL_TYPED_RELATION_AND_SEMANTIC_GROUNDING_COMPLETE",
     }
 
 
@@ -307,6 +382,7 @@ def write_ciel_receipt_bundle(
 
 __all__ = [
     "ANALYSIS_SCHEMA",
+    "GROUNDING_SCHEMA",
     "SCHEMA",
     "build_ciel_receipt",
     "build_ciel_receipt_rows",
