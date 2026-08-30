@@ -8,8 +8,8 @@ on:
     paths:
       - 'dataset/**'
       - 'prompts/**'
-      - 'src/ciel_gremlin_benchmark/gremlin_receipts.py'
-      - 'src/ciel_gremlin_benchmark/cli.py'
+      - 'src/ciel_gremlin_benchmark/**'
+      - 'pyproject.toml'
       - 'tests/test_gremlin_receipts.py'
       - 'COMPONENT_PINS_V0_1.json'
       - 'VALIDATED_ARTIFACTS_V0_1.json'
@@ -69,7 +69,7 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: benchmark-materialized-inputs-${{ github.sha }}
+          name: benchmark-materialized-runtime-${{ github.sha }}
           path: |
             artifacts/gremlin_receipts.jsonl
             dataset/golden_v0_1.jsonl
@@ -78,4 +78,6 @@ jobs:
             prompts/b2_b4_research_structured.txt
             COMPONENT_PINS_V0_1.json
             VALIDATED_ARTIFACTS_V0_1.json
+            pyproject.toml
+            src/ciel_gremlin_benchmark/
           if-no-files-found: error
