@@ -57,7 +57,10 @@ class RunManifest:
             model_id=str(raw["model_id"]),
             model_parameters=dict(raw.get("model_parameters") or {}),
             prompt_sha256=str(raw["prompt_sha256"]),
-            component_commits={str(k): str(v) for k, v in dict(raw.get("component_commits") or {}).items()},
+            component_commits={
+                str(k): str(v)
+                for k, v in dict(raw.get("component_commits") or {}).items()
+            },
             replicate=int(raw.get("replicate", 0)),
             schema=str(raw.get("schema", RUN_MANIFEST_SCHEMA)),
         )
@@ -89,10 +92,14 @@ class RunManifest:
             if not name:
                 issues.append("component commit name is empty")
             if not _HEX40.fullmatch(sha):
-                issues.append(f"component {name!r} commit must be lowercase 40-hex git SHA")
+                issues.append(
+                    f"component {name!r} commit must be lowercase 40-hex git SHA"
+                )
         for required in contract.required_components:
             if required not in self.component_commits:
-                issues.append(f"{self.system_id} requires component commit {required!r}")
+                issues.append(
+                    f"{self.system_id} requires component commit {required!r}"
+                )
         return issues
 
     def comparison_key(self) -> tuple[Any, ...]:
@@ -132,10 +139,16 @@ def audit_comparability(manifests: list[RunManifest]) -> list[str]:
         return ["no manifests supplied"]
     issues: list[str] = []
     for manifest in manifests:
-        issues.extend(f"{manifest.run_id}: {issue}" for issue in manifest.validate())
+        issues.extend(
+            f"{manifest.run_id}: {issue}" for issue in manifest.validate()
+        )
+
     keys = {manifest.comparison_key() for manifest in manifests}
     if len(keys) != 1:
-        issues.append("run manifests do not share dataset/model/parameters/benchmark_commit/replicate")
+        issues.append(
+            "run manifests do not share dataset/model/parameters/"
+            "benchmark_commit/replicate"
+        )
 
     by_component: dict[str, set[str]] = {}
     for manifest in manifests:
@@ -143,8 +156,25 @@ def audit_comparability(manifests: list[RunManifest]) -> list[str]:
             by_component.setdefault(name, set()).add(sha)
     for name, shas in sorted(by_component.items()):
         if len(shas) > 1:
-            issues.append(f"component {name!r} differs across runs: {sorted(shas)}")
-    system_ids = [manifest.system_id for manifest in manifests]
-    if len(system_ids) != len(set(system_ids)):
+            issues.append(
+                f"component {name!r} differs across runs: {sorted(shas)}"
+            )
+
+    by_system = {manifest.system_id: manifest for manifest in manifests}
+    if len(by_system) != len(manifests):
         issues.append("duplicate system_id manifests in comparison")
+
+    # Ablation fairness: B1→B3 isolates CIEL and B2→B4 isolates CIEL
+    # after GREMLIN. The model-facing prompt must remain byte-identical
+    # within each pair; only the semantic execution layer may change.
+    for left, right in (("B1", "B3"), ("B2", "B4")):
+        if (
+            left in by_system
+            and right in by_system
+            and by_system[left].prompt_sha256 != by_system[right].prompt_sha256
+        ):
+            issues.append(
+                f"ablation prompt drift: {left} and {right} must share prompt_sha256"
+            )
+
     return issues

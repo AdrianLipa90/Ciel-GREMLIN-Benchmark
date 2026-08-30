@@ -24,11 +24,16 @@ def manifest(system_id: str, prompt: str, components=None, model="model-x") -> R
     )
 
 
-def test_manifests_allow_system_specific_prompts_but_freeze_model_and_components():
+def test_manifests_allow_layer_specific_prompts_with_paired_ablation_prompts():
     b1 = manifest("B1", P0)
     b2 = manifest("B2", P1, {"gremlin": G})
-    b4 = manifest("B4", "2" * 64, {"gremlin": G, "cielingo": CI, "ciel_semantic": CS})
-    assert audit_comparability([b1, b2, b4]) == []
+    b3 = manifest("B3", P0, {"cielingo": CI, "ciel_semantic": CS})
+    b4 = manifest(
+        "B4",
+        P1,
+        {"gremlin": G, "cielingo": CI, "ciel_semantic": CS},
+    )
+    assert audit_comparability([b1, b2, b3, b4]) == []
 
 
 def test_manifest_audit_rejects_model_drift():
@@ -36,6 +41,24 @@ def test_manifest_audit_rejects_model_drift():
     b2 = manifest("B2", P1, {"gremlin": G}, model="other-model")
     issues = audit_comparability([b1, b2])
     assert any("do not share" in issue for issue in issues)
+
+
+def test_manifest_audit_rejects_b1_b3_prompt_drift():
+    b1 = manifest("B1", P0)
+    b3 = manifest("B3", P1, {"cielingo": CI, "ciel_semantic": CS})
+    issues = audit_comparability([b1, b3])
+    assert any("B1 and B3" in issue for issue in issues)
+
+
+def test_manifest_audit_rejects_b2_b4_prompt_drift():
+    b2 = manifest("B2", P0, {"gremlin": G})
+    b4 = manifest(
+        "B4",
+        P1,
+        {"gremlin": G, "cielingo": CI, "ciel_semantic": CS},
+    )
+    issues = audit_comparability([b2, b4])
+    assert any("B2 and B4" in issue for issue in issues)
 
 
 def test_b4_manifest_requires_all_component_commits():

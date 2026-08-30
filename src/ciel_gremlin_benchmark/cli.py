@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .dataset import dataset_sha256, family_counts, load_tasks
 from .experiment import compare_runs
-from .manifest import audit_comparability, load_manifest
+from .manifest import RunManifest, audit_comparability, file_sha256, load_manifest
 from .runner import BenchmarkRunner, ReplayAdapter
 from .sanity import run_metric_sanity
 
@@ -47,6 +47,62 @@ def _cmd_score(args: argparse.Namespace) -> int:
         Path(args.output).write_text(serialized + "\n", encoding="utf-8")
     else:
         print(serialized)
+    return 0
+
+
+def _parse_components(values: list[str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError(f"component must use name=sha form: {value!r}")
+        name, sha = value.split("=", 1)
+        name = name.strip()
+        sha = sha.strip()
+        if not name or not sha:
+            raise ValueError(f"component must use non-empty name=sha form: {value!r}")
+        if name in out:
+            raise ValueError(f"duplicate component {name!r}")
+        out[name] = sha
+    return out
+
+
+def _cmd_make_manifest(args: argparse.Namespace) -> int:
+    try:
+        model_parameters = json.loads(args.model_parameters_json)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid --model-parameters-json: {exc}") from exc
+    if not isinstance(model_parameters, dict):
+        raise ValueError("--model-parameters-json must decode to a JSON object")
+
+    manifest = RunManifest(
+        run_id=args.run_id,
+        system_id=args.system_id,
+        dataset_sha256=dataset_sha256(args.dataset),
+        benchmark_commit=args.benchmark_commit,
+        model_provider=args.model_provider,
+        model_id=args.model_id,
+        model_parameters=model_parameters,
+        prompt_sha256=file_sha256(args.prompt),
+        component_commits=_parse_components(args.component),
+        replicate=args.replicate,
+    )
+    issues = manifest.validate()
+    if issues:
+        raise ValueError("invalid generated run manifest: " + "; ".join(issues))
+
+    output = manifest.to_dict()
+    serialized = json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True)
+    target = Path(args.output)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(serialized + "\n", encoding="utf-8")
+    _print_json({
+        "status": "PASS",
+        "output": str(target),
+        "system_id": manifest.system_id,
+        "dataset_sha256": manifest.dataset_sha256,
+        "prompt_sha256": manifest.prompt_sha256,
+        "manifest_commitment": manifest.commitment(),
+    })
     return 0
 
 
@@ -91,7 +147,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ciel-gremlin-benchmark")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    validate = sub.add_parser("validate", help="validate and fingerprint a JSONL benchmark dataset")
+    validate = sub.add_parser(
+        "validate",
+        help="validate and fingerprint a JSONL benchmark dataset",
+    )
     validate.add_argument("dataset")
     validate.set_defaults(func=_cmd_validate)
 
@@ -107,6 +166,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="require B1-B4 provenance receipts declared by the adapter contract",
     )
     score.set_defaults(func=_cmd_score)
+
+    make_manifest = sub.add_parser(
+        "make-manifest",
+        help="freeze one B0-B4 run manifest from exact dataset/prompt/component bytes",
+    )
+    make_manifest.add_argument("--run-id", required=True)
+    make_manifest.add_argument("--system-id", required=True)
+    make_manifest.add_argument("--dataset", required=True)
+    make_manifest.add_argument("--benchmark-commit", required=True)
+    make_manifest.add_argument("--model-provider", required=True)
+    make_manifest.add_argument("--model-id", required=True)
+    make_manifest.add_argument(
+        "--model-parameters-json",
+        default="{}",
+        help='JSON object, e.g. \'{"temperature":0,"seed":7}\'',
+    )
+    make_manifest.add_argument("--prompt", required=True)
+    make_manifest.add_argument(
+        "--component",
+        action="append",
+        default=[],
+        help="repeatable component pin in name=40hexsha form",
+    )
+    make_manifest.add_argument("--replicate", type=int, default=0)
+    make_manifest.add_argument("--output", required=True)
+    make_manifest.set_defaults(func=_cmd_make_manifest)
 
     audit = sub.add_parser(
         "audit-manifests",

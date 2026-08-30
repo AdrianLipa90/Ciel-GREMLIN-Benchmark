@@ -1,0 +1,31 @@
+{
+  "schema": "CIEL_GREMLIN_COMPONENT_PINS_V0_1",
+  "observed_at": "2026-08-30",
+  "components": {
+    "gremlin": {
+      "repository": "AdrianLipa90/GREMLIN",
+      "branch": "feat/gremlin-research-engine-v0.1",
+      "commit": "3693b933b67213815d1632a93bf3cae11175fd51",
+      "status": "CANDIDATE_PIN"
+    },
+    "cielingo": {
+      "repository": "AdrianLipa90/cielingo-canon",
+      "branch": "feat/relation-event-hypergraph-v0.1",
+      "commit": "1a42123a44df641e41207ced919714d32dd46780",
+      "pr": 18,
+      "status": "STACKED_DRAFT_MERGEABLE"
+    },
+    "ciel_semantic": {
+      "repository": "AdrianLipa90/Ciel-Semantic-Model-",
+      "branch": "feat/relation-event-hypergraph-bridge-v0.1",
+      "commit": "bc4571d6485dbd8c85876ba2c4739fb3fa290fc8",
+      "pr": 27,
+      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS"
+    }
+  },
+  "reporting_gate": {
+    "live_exploratory_run_allowed": true,
+    "reportable_v0_1_result_requires_full_component_suite": true,
+    "hosted_ci_status": "NO_WORKFLOW_RUN_OBSERVED_FOR_CURRENT_CIEL_STACK_HEADS"
+  }
+}
