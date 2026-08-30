@@ -1,37 +1,40 @@
 # CIEL × GREMLIN Integration Pins
 
-Observed for benchmark integration on 2026-08-30. Every actual run must copy the exact used SHAs into `RunManifest.component_commits`.
+Observed for benchmark integration on 2026-08-30. Every actual run copies the exact used SHAs into `RunManifest.component_commits`.
 
 ## GREMLIN
 
 Repository: `AdrianLipa90/GREMLIN`  
-Branch: `feat/gremlin-research-engine-v0.1`  
-Candidate pin: `3693b933b67213815d1632a93bf3cae11175fd51`
+Branch: `feat/benchmark-supplied-evidence-v0.1`  
+Candidate pin: `7b80db8dd7a553c77616427a91bade608e12b968`  
+Draft PR: `#44`, based directly on current GREMLIN `main`.
 
-GREMLIN remains the candidate/evidence/adversarial research layer. B2/B4 preserve its native research receipt under `receipts.gremlin`; that receipt does not grant execution authority.
+The benchmark lane accepts caller-supplied task evidence, reuses native OWL/SPIDER/MOLE/HOUND handlers and BELZEBUB synthesis, and applies the existing relational case-frame enrichment. Existing web research remains unchanged. Authority remains candidate-only.
+
+Hosted GREMLIN MCP/relational CI: **PASS — 43 tests** including `test_gremlin_supplied_evidence_research_v01.py`.
 
 ## CIELingo producer
 
 Repository: `AdrianLipa90/cielingo-canon`  
 Branch: `feat/relation-event-hypergraph-v0.1`  
-Candidate pin: `1a42123a44df641e41207ced919714d32dd46780`  
+Candidate pin: `43375f58d46ca99ed6e8536fc65ceb02816f5c3e`  
 Stacked draft PR: `#18`, base `feat/operator-signatures-v0.1`, mergeable.
 
-The producer carries CasePortFrame → OperatorSignature → MeaningRoleMultimap → RelationHypergraph. The current stack includes an adversarial missing-port gate in which the graph commitment is recomputed after removing the GIVES ACC port; validation must still fail on signature arity/port-set. It also pins the `SentenceEquation` tail ABI as `notes, role_multimap, relation_hypergraph`.
+The producer carries CasePortFrame → OperatorSignature → MeaningRoleMultimap → RelationHypergraph. Structural validation covers exact GIVES arity/ports, implicit subject, signature commitments, anti-INSTRUMENT semantics and additive SentenceEquation transport.
+
+Hosted private-repo CI was triggered on this stacked base but the failing matrix job contained **zero executed steps** and no pytest log. Status is therefore `INFRA_FAILURE_BEFORE_STEPS`, not a code/test FAIL.
 
 ## CIEL semantic consumer
 
 Repository: `AdrianLipa90/Ciel-Semantic-Model-`  
 Branch: `feat/relation-event-hypergraph-bridge-v0.1`  
-Candidate pin: `bc4571d6485dbd8c85876ba2c4739fb3fa290fc8`  
+Candidate pin: `67157523badc1460eefc18f75b75ff20500dcbc3`  
 Stacked draft PR: `#27`, base `feat/operator-signature-bridge-v0.1`, mergeable.
 
-The stack is synchronized with the typed-signature parent at `6a23a5a6ec29cc04715bc2cd05be0d52eea7f0b1`. Its effective diff versus the parent is limited to the relation-hypergraph bridge, its adversarial test fixture, and cross-repo metadata.
+Independent structural GIVES harness: PASS for valid full graph plus missing-port, UniversalRole tamper, relation-family tamper, forged-signature and raw-commitment adversarial cases.
 
-Independent structural GIVES harness: PASS for six structural cases (valid full graph, missing port, UniversalRole tamper, relation-family tamper, forged signature SHA, raw commitment tamper).
+Hosted private-repo CI likewise terminated before any step (`steps=[]`), so it is recorded as infrastructure failure rather than code failure.
 
 ## Admission status
 
-An exploratory B0–B4 run may use the candidate pins above if the manifests label the exact commits.
-
-A result must not be called the completed/reportable v0.1 benchmark until the full component repository suites for the pinned CIELingo and CIEL Semantic heads have executed successfully. No hosted GitHub Actions workflow run was observed for the current heads, so the structural checks above are reported separately from full-suite validation.
+Exploratory B0–B4 runs may use these exact candidate pins. `REPORTABLE_V0_1` still requires an executed full suite for both private CIEL components or an equivalent independently reproducible full-suite execution.

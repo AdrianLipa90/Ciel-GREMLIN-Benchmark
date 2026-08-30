@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .dataset import dataset_sha256, family_counts, load_tasks
 from .experiment import compare_runs
+from .gremlin_receipts import native_gremlin_executor, write_gremlin_receipt_bundle
 from .manifest import RunManifest, audit_comparability, file_sha256, load_manifest
 from .capture import capture_predictions
 from .openai_live import OpenAIResponsesAdapter, ReceiptBundleStore, UrllibOpenAIResponsesTransport
@@ -106,6 +107,15 @@ def _cmd_make_manifest(args: argparse.Namespace) -> int:
         "prompt_sha256": manifest.prompt_sha256,
         "manifest_commitment": manifest.commitment(),
     })
+    return 0
+
+
+def _cmd_build_gremlin_receipts(args: argparse.Namespace) -> int:
+    tasks = load_tasks(args.dataset)
+    result = write_gremlin_receipt_bundle(
+        tasks, native_gremlin_executor(), args.output
+    )
+    _print_json({"status": "PASS", **result})
     return 0
 
 
@@ -268,6 +278,14 @@ def build_parser() -> argparse.ArgumentParser:
     make_manifest.add_argument("--replicate", type=int, default=0)
     make_manifest.add_argument("--output", required=True)
     make_manifest.set_defaults(func=_cmd_make_manifest)
+
+    gremlin_receipts = sub.add_parser(
+        "build-gremlin-receipts",
+        help="build deterministic GREMLIN receipt JSONL from benchmark-supplied evidence",
+    )
+    gremlin_receipts.add_argument("--dataset", required=True)
+    gremlin_receipts.add_argument("--output", required=True)
+    gremlin_receipts.set_defaults(func=_cmd_build_gremlin_receipts)
 
     capture_openai = sub.add_parser(
         "capture-openai",

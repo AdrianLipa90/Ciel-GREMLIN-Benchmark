@@ -4,28 +4,30 @@
   "components": {
     "gremlin": {
       "repository": "AdrianLipa90/GREMLIN",
-      "branch": "feat/gremlin-research-engine-v0.1",
-      "commit": "3693b933b67213815d1632a93bf3cae11175fd51",
-      "status": "CANDIDATE_PIN"
+      "branch": "feat/benchmark-supplied-evidence-v0.1",
+      "commit": "7b80db8dd7a553c77616427a91bade608e12b968",
+      "pr": 44,
+      "status": "CI_43_PASS_MERGEABLE_DRAFT"
     },
     "cielingo": {
       "repository": "AdrianLipa90/cielingo-canon",
       "branch": "feat/relation-event-hypergraph-v0.1",
-      "commit": "1a42123a44df641e41207ced919714d32dd46780",
+      "commit": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
       "pr": 18,
-      "status": "STACKED_DRAFT_MERGEABLE"
+      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_INFRA_FAIL_BEFORE_STEPS"
     },
     "ciel_semantic": {
       "repository": "AdrianLipa90/Ciel-Semantic-Model-",
       "branch": "feat/relation-event-hypergraph-bridge-v0.1",
-      "commit": "bc4571d6485dbd8c85876ba2c4739fb3fa290fc8",
+      "commit": "67157523badc1460eefc18f75b75ff20500dcbc3",
       "pr": 27,
-      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS"
+      "status": "STACKED_DRAFT_MERGEABLE_STRUCTURAL_PASS_HOSTED_INFRA_FAIL_BEFORE_STEPS"
     }
   },
   "reporting_gate": {
     "live_exploratory_run_allowed": true,
     "reportable_v0_1_result_requires_full_component_suite": true,
-    "hosted_ci_status": "NO_WORKFLOW_RUN_OBSERVED_FOR_CURRENT_CIEL_STACK_HEADS"
+    "gremlin_hosted_ci": "PASS_43_TESTS",
+    "private_ciel_hosted_ci": "INFRA_FAILURE_BEFORE_STEPS_NOT_CODE_FAIL"
   }
 }
