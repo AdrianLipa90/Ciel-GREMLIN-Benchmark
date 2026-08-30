@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - 'dataset/**'
+      - 'prompts/**'
       - 'src/ciel_gremlin_benchmark/gremlin_receipts.py'
       - 'src/ciel_gremlin_benchmark/cli.py'
       - 'tests/test_gremlin_receipts.py'
@@ -51,8 +52,30 @@ jobs:
           print('GREMLIN receipt coverage: 60/60')
           print('GREMLIN receipt SHA-256:', digest)
           PY
+      - name: Verify materialized benchmark inputs
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          dataset = Path('dataset/golden_v0_1.jsonl')
+          assert len([x for x in dataset.read_text(encoding='utf-8').splitlines() if x.strip()]) == 60
+          print('dataset_sha256', hashlib.sha256(dataset.read_bytes()).hexdigest())
+          for path in (
+              Path('prompts/b0_direct.txt'),
+              Path('prompts/b1_b3_structured.txt'),
+              Path('prompts/b2_b4_research_structured.txt'),
+          ):
+              print(path, hashlib.sha256(path.read_bytes()).hexdigest())
+          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: gremlin-receipts-${{ github.sha }}
-          path: artifacts/gremlin_receipts.jsonl
+          name: benchmark-materialized-inputs-${{ github.sha }}
+          path: |
+            artifacts/gremlin_receipts.jsonl
+            dataset/golden_v0_1.jsonl
+            prompts/b0_direct.txt
+            prompts/b1_b3_structured.txt
+            prompts/b2_b4_research_structured.txt
+            COMPONENT_PINS_V0_1.json
+            VALIDATED_ARTIFACTS_V0_1.json
           if-no-files-found: error
