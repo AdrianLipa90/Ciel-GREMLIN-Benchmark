@@ -18,32 +18,77 @@ Hosted validation on the exact pinned head:
 - workflow run: `33299763706`
 - artifact ID: `9728536601`
 - artifact ZIP SHA-256: `07b7becdc38c5854c38cbcfd9366e706619ab3000b43e61eaae7f036d41c23b0`
-- benchmark commit used by the receipt build: `6f4496c451d7ce4935678cc92df49f4e0920cc31`
-
-The generated receipt bundle remains a reproducible Actions artifact. `VALIDATED_ARTIFACTS_V0_1.json` records its immutable provenance; generated receipt bytes are not treated as source code.
 
 ## CIELingo producer
 
 Repository: `AdrianLipa90/cielingo-canon`  
-Branch: `feat/relation-event-hypergraph-v0.1`  
-Candidate pin: `43375f58d46ca99ed6e8536fc65ceb02816f5c3e`  
-Stacked draft PR: `#18`, base `feat/operator-signatures-v0.1`, mergeable.
+Branch: `feat/relation-card-identity-transport-v0.1`  
+Candidate pin: `7d698b276960d0e8067e30adbdab22cdea964f04`  
+Stacked draft PR: `#20`, base `feat/action-operator-coverage-v0.2`, mergeable.
 
-The producer carries CasePortFrame → OperatorSignature → MeaningRoleMultimap → RelationHypergraph. Structural validation covers exact GIVES arity/ports, implicit subject, signature commitments, anti-INSTRUMENT semantics and additive SentenceEquation transport.
+The producer path is now:
 
-Hosted workflow run `33299470285` was retried. The failed/cancelled matrix jobs still contain **zero executed steps** (`steps=null`) and no pytest log. Status remains `INFRA_FAILURE_BEFORE_STEPS`, not a code/test FAIL.
+```text
+RegionalSolveResult.candidates.card_id
+→ RelationHypergraph entity token span
+→ RelationEntityCardBindings
+→ exact relation_hypergraph_commitment
+→ SentenceEquation.relation_entity_card_bindings
+```
+
+A relation entity receives semantic identity only through exact token-index continuity and exactly one distinct regional `card_id`. `slot_id` is retained only as provenance. The producer receipt partitions every relation entity as bound, ambiguous, unbound, or implicit and binds the receipt commitment to the exact relation-hypergraph commitment.
+
+Validation status on the pinned candidate:
+- isolated producer/consumer identity contract harness: **10/10 PASS**
+- current full repository suite: **UNTESTED**
+- hosted CI on current card-identity head: no executed run recorded at pin time
 
 ## CIEL semantic consumer
 
 Repository: `AdrianLipa90/Ciel-Semantic-Model-`  
-Branch: `feat/relation-event-hypergraph-bridge-v0.1`  
-Candidate pin: `67157523badc1460eefc18f75b75ff20500dcbc3`  
-Stacked draft PR: `#27`, base `feat/operator-signature-bridge-v0.1`, mergeable.
+Branch: `feat/relation-card-identity-bridge-v0.1`  
+Candidate pin: `0435ce8ecfd97f09faa0ea702a847d62dd91630a`  
+Stacked draft PR: `#29`, base `feat/entity-grounding-by-card-id-v0.1`, mergeable.
 
-Independent structural GIVES harness: PASS for valid full graph plus missing-port, UniversalRole tamper, relation-family tamper, forged-signature and raw-commitment adversarial cases.
+The consumer path is:
 
-Hosted workflow run `33299490269` was retried. All matrix jobs again terminated before any workflow step (`steps=null`), so the result is recorded as infrastructure failure rather than code failure.
+```text
+validated RelationHypergraph
++ validated RelationEntityCardBindings
+→ exact equation/language/graph/entity/token continuity
+→ source-language atlas corroboration of supplied card_id
+→ shared-card world resolution
+→ RelationEntityGroundingBundle
+→ resolved world-entity cross-index only
+```
+
+A supplied singleton `card_id` cannot redirect grounding unless it matches the exact source-language atlas form. Ambiguous or unbound producer identity remains fail-closed. `slot_id` never establishes identity. PL/EN identity may cross the language boundary only through the same corroborated `card_id`.
+
+Validation status on the pinned candidate:
+- isolated producer/consumer identity contract harness: **10/10 PASS**
+- isolated source-atlas corroboration checks: **3/3 PASS**
+- pinned cross-repo golden contract: implemented, current-head execution pending
+- current full repository suite: **UNTESTED**
+
+## Benchmark consumer boundary
+
+The benchmark no longer resolves CIEL relation entities with its own surface/alias matcher. B3/B4 READY projection requires a `CIEL_RELATION_ENTITY_GROUNDING_BUNDLE_V0_1` whose equation ID, language ID, relation-hypergraph commitment and card-binding commitment match the exact `SentenceEquation` receipts.
+
+Therefore:
+
+```text
+surface coincidence alone
+≠ execution authority
+
+slot_id coincidence
+≠ execution authority
+
+validated shared card identity + exact receipt continuity
+→ candidate execution argument binding
+```
+
+This keeps benchmark scoring downstream of the CIEL/Semantic boundary rather than silently recreating a second grounding system inside the harness.
 
 ## Admission status
 
-Exploratory B0–B4 runs may use these exact candidate pins. GREMLIN now has an executed hosted test gate and a 60-task native receipt artifact. `REPORTABLE_V0_1` still requires an executed full suite for both private CIEL components or an equivalent independently reproducible full-suite execution.
+Exploratory B0–B4 runs may use these exact candidate pins once CIEL receipt coverage is regenerated from the pinned card-identity stack. GREMLIN has an executed hosted test gate and a 60-task native receipt artifact. `REPORTABLE_V0_1` still requires an executed full suite for both private CIEL components or an equivalent independently reproducible full-suite execution.
