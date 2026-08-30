@@ -8,6 +8,8 @@ from pathlib import Path
 from .dataset import dataset_sha256, family_counts, load_tasks
 from .experiment import compare_runs
 from .manifest import RunManifest, audit_comparability, file_sha256, load_manifest
+from .capture import capture_predictions
+from .openai_live import OpenAIResponsesAdapter, ReceiptBundleStore, UrllibOpenAIResponsesTransport
 from .runner import BenchmarkRunner, ReplayAdapter
 from .sanity import run_metric_sanity
 
@@ -106,6 +108,50 @@ def _cmd_make_manifest(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_capture_openai(args: argparse.Namespace) -> int:
+    try:
+        model_parameters = json.loads(args.model_parameters_json)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid --model-parameters-json: {exc}") from exc
+    if not isinstance(model_parameters, dict):
+        raise ValueError("--model-parameters-json must decode to a JSON object")
+
+    tasks = load_tasks(args.dataset)
+    prompt = Path(args.prompt).read_text(encoding="utf-8")
+    receipt_store = (
+        ReceiptBundleStore.from_jsonl(args.receipt_bundle)
+        if args.receipt_bundle
+        else None
+    )
+    transport = UrllibOpenAIResponsesTransport(
+        api_key_env=args.api_key_env,
+        url=args.responses_url,
+        timeout_s=args.timeout_s,
+    )
+    adapter = OpenAIResponsesAdapter(
+        system_id=args.system_id,
+        model_id=args.model_id,
+        prompt=prompt,
+        transport=transport,
+        model_parameters=model_parameters,
+        receipt_store=receipt_store,
+    )
+    predictions = capture_predictions(
+        tasks,
+        adapter,
+        args.output,
+        strict_system_contract=args.system_id != "B0",
+    )
+    _print_json({
+        "status": "PASS",
+        "system_id": args.system_id,
+        "model_id": args.model_id,
+        "captured": len(predictions),
+        "output": str(args.output),
+    })
+    return 0
+
+
 def _cmd_audit_manifests(args: argparse.Namespace) -> int:
     manifests = [load_manifest(path) for path in args.manifests]
     issues = audit_comparability(manifests)
@@ -192,6 +238,22 @@ def build_parser() -> argparse.ArgumentParser:
     make_manifest.add_argument("--replicate", type=int, default=0)
     make_manifest.add_argument("--output", required=True)
     make_manifest.set_defaults(func=_cmd_make_manifest)
+
+    capture_openai = sub.add_parser(
+        "capture-openai",
+        help="capture one live OpenAI Responses API prediction per benchmark task",
+    )
+    capture_openai.add_argument("--dataset", required=True)
+    capture_openai.add_argument("--system-id", required=True, choices=["B0", "B1", "B2", "B3", "B4"])
+    capture_openai.add_argument("--model-id", required=True)
+    capture_openai.add_argument("--prompt", required=True)
+    capture_openai.add_argument("--output", required=True)
+    capture_openai.add_argument("--receipt-bundle")
+    capture_openai.add_argument("--api-key-env", default="OPENAI_API_KEY")
+    capture_openai.add_argument("--responses-url", default="https://api.openai.com/v1/responses")
+    capture_openai.add_argument("--timeout-s", type=float, default=120.0)
+    capture_openai.add_argument("--model-parameters-json", default="{}")
+    capture_openai.set_defaults(func=_cmd_capture_openai)
 
     audit = sub.add_parser(
         "audit-manifests",
