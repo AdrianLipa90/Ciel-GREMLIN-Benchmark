@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ciel-gremlin-benchmark"
+version = "0.1.0"
+description = "Benchmark harness for verified AI-agent execution using GREMLIN research and CIEL semantic control."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "All rights reserved"}
+authors = [{name = "Adrian Lipa"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+ciel-gremlin-benchmark = "ciel_gremlin_benchmark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
