@@ -1,0 +1,108 @@
+{
+  "schema": "CIEL_READY_BOUNDARY_AUDIT_V0_2",
+  "method": "STATIC_CONTRACT_BOUNDARY_AUDIT",
+  "dataset_sha256": "6ad64afc4303ec2253a7e6d8f57f1ec4813b5dce1eaba1d6347f6767f6deee94",
+  "ground_truth_used_for_readiness_classification": false,
+  "scope": {
+    "typed_tasks": 13,
+    "typed_polish_tasks": 13,
+    "full_dataset_tasks": 60
+  },
+  "expected_ready_candidates": [
+    {
+      "task_id": "F6-005",
+      "operator": "CONNECTED_WITH",
+      "basis": "SHARED_CARD_IDENTITY_FOR_GRAPH_AND_GEOMETRY",
+      "status": "EXPECTED_READY_CANDIDATE"
+    },
+    {
+      "task_id": "F6-006",
+      "operator": "BELONGS_TO",
+      "basis": "SHARED_CARD_IDENTITY_FOR_MODULE_AND_SYSTEM",
+      "status": "EXPECTED_READY_CANDIDATE"
+    }
+  ],
+  "blocked_typed_tasks": [
+    {
+      "task_id": "F1-001",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_RECIPIENT_IDENTITY_UNBOUND",
+      "surface": "Adrianowi"
+    },
+    {
+      "task_id": "F2-001",
+      "status": "BLOCK_EXPECTED",
+      "reason": "MULTI_TOKEN_OBJECT_IDENTITY_SPAN_NOT_COVERED_BY_SINGLE_CARD",
+      "surface": "raport Q2"
+    },
+    {
+      "task_id": "F2-004",
+      "status": "BLOCK_EXPECTED",
+      "reason": "GENERIC_FILE_CONCEPT_DOES_NOT_IDENTIFY_ONE_WORLD_FILE",
+      "surface": "plik"
+    },
+    {
+      "task_id": "F2-006",
+      "status": "BLOCK_EXPECTED",
+      "reason": "RUNTIME_IDENTIFIER_AND_LITERAL_ARGUMENT_KINDS_NOT_YET_SEPARATED",
+      "surface": "44 / status / approved"
+    },
+    {
+      "task_id": "F5-001",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_RECIPIENT_IDENTITY_UNBOUND",
+      "surface": "Zosi"
+    },
+    {
+      "task_id": "F5-007",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_RECIPIENT_IDENTITY_UNBOUND",
+      "surface": "Zosi"
+    },
+    {
+      "task_id": "F6-001",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_RECIPIENT_IDENTITY_UNBOUND",
+      "surface": "Zosi"
+    },
+    {
+      "task_id": "F6-002",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_IDENTITIES_UNBOUND",
+      "surface": "Adrian / Luna"
+    },
+    {
+      "task_id": "F6-004",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PROPER_NAME_IDENTITIES_UNBOUND",
+      "surface": "Adrian / Zosią"
+    },
+    {
+      "task_id": "F6-007",
+      "status": "BLOCK_EXPECTED",
+      "reason": "ADDRESSEE_IDENTITY_UNBOUND_AND_UTTERANCE_ARGUMENT_NOT_PROJECTED",
+      "surface": "Zosiu"
+    },
+    {
+      "task_id": "F6-008",
+      "status": "BLOCK_EXPECTED",
+      "reason": "PRONOUN_RECIPIENT_HAS_NO_ANTECEDENT_IDENTITY",
+      "surface": "jej"
+    }
+  ],
+  "static_boundary_counts": {
+    "expected_ready_candidates": 2,
+    "expected_ready_of_typed": 0.15384615384615385,
+    "expected_ready_of_full_dataset": 0.03333333333333333,
+    "proper_name_or_reference_identity_blocks": 7,
+    "composite_or_generic_object_identity_blocks": 2,
+    "literal_argument_kind_blocks": 1,
+    "projection_shape_blocks": 1
+  },
+  "evidential_status": {
+    "ready_count": "NOT_EXECUTED",
+    "classification": "STATIC_EXPECTATION_ONLY",
+    "reportable_v0_1": false
+  },
+  "next_architecture_gate": "RUNTIME_ENTITY_IDENTITY_RECEIPT_PLUS_LITERAL_ARGUMENT_KIND_SEPARATION"
+}
