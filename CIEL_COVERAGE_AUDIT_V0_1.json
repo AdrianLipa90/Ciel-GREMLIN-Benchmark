@@ -1,0 +1,59 @@
+{
+  "schema": "CIEL_BENCHMARK_COVERAGE_AUDIT_V0_1",
+  "status": "ISOLATED_EXACT_TYPED_SUBSYSTEM_AUDIT",
+  "observed_at": "2026-08-30",
+  "dataset": {
+    "path": "dataset/golden_v0_1.jsonl",
+    "git_blob_sha": "92ee7f18dc7be6aee3f9362d9567c971f91b5068",
+    "task_count": 60
+  },
+  "cielingo": {
+    "repository": "AdrianLipa90/cielingo-canon",
+    "commit": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
+    "pr": 18,
+    "exact_blob_checks": {
+      "src/cielingo_core/lingophysics/case_port_frame.py": "3bfe656ea5da7d9e3d2d327851f1836e6d6bd90c",
+      "src/cielingo_core/lingophysics/operator_signatures.py": "90492a5c6441e4a84ae4149fab7b972c52cacf52",
+      "src/cielingo_core/global_layer/role_multimap.py": "1d77ed75a100aee62b530976dab73fa1455e5953",
+      "src/cielingo_core/lingophysics/relation_hypergraph.py": "e4da11551b60398d6457e2cf388ea59e52a718f0",
+      "src/cielingo_core/regional/base.py": "c4bac3a94782c4a14f1dc92cc623a97581abe31a"
+    },
+    "isolated_typed_subsystem_tests": {
+      "passed": 24,
+      "failed": 0,
+      "compatibility_stub_used": "global_layer/contracts.py",
+      "full_repository_suite_claimed": false
+    }
+  },
+  "coverage": {
+    "polish_tasks": 35,
+    "non_polish_tasks": 25,
+    "non_polish_status": "LANGUAGE_UNSUPPORTED_BY_PINNED_CIEL",
+    "polish_reference_rule_match_count": 2,
+    "typed_signature_valid_count": 2,
+    "typed_relation_matches": {
+      "F6-006": "BELONGS_TO",
+      "F6-007": "ADDRESSES"
+    },
+    "polish_no_reference_rule_match_count": 33,
+    "execution_contract_ready_count": 0,
+    "blocking_world_binding_count": 2,
+    "blocking_world_bindings": {
+      "F6-006": ["member_or_part:Moduł", "container_or_owner:systemu"],
+      "F6-007": ["addressee:Zosiu"]
+    }
+  },
+  "solver_check": {
+    "solver_commit": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
+    "segmentation": "simple_space_segment",
+    "full_morphology": false,
+    "pre_caseport_lemmatization": false
+  },
+  "admission": {
+    "paid_b0_b4_run_recommended_now": false,
+    "reason": "Current B3/B4 would primarily measure missing CIEL surface/operator coverage rather than semantic-firewall discrimination.",
+    "exploratory_fail_closed_receipts_allowed": true,
+    "reportable_v0_1": false,
+    "ground_truth_used_for_system_receipts": false
+  }
+}
