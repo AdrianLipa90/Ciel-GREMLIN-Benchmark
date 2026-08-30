@@ -1,6 +1,9 @@
 name: GREMLIN benchmark receipt artifact
 
 on:
+  push:
+    branches:
+      - feat/benchmark-v0.1
   pull_request:
     paths:
       - 'dataset/**'
