@@ -1,0 +1,83 @@
+name: GREMLIN benchmark receipt artifact
+
+on:
+  push:
+    branches:
+      - feat/benchmark-v0.1
+  pull_request:
+    paths:
+      - 'dataset/**'
+      - 'prompts/**'
+      - 'src/ciel_gremlin_benchmark/**'
+      - 'pyproject.toml'
+      - 'tests/test_gremlin_receipts.py'
+      - 'COMPONENT_PINS_V0_1.json'
+      - 'VALIDATED_ARTIFACTS_V0_1.json'
+      - '.github/workflows/gremlin-receipt-artifact.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-gremlin-receipts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install benchmark and pinned GREMLIN
+        run: |
+          python -m pip install -e . pytest
+          python -m pip install 'git+https://github.com/AdrianLipa90/GREMLIN.git@69f4670f1b4c618a964d2e246987aa8de6d61b09'
+      - name: Run complete benchmark suite
+        run: python -m pytest -q
+      - name: Build native GREMLIN receipt bundle
+        run: >-
+          python -m ciel_gremlin_benchmark.cli build-gremlin-receipts
+          --dataset dataset/golden_v0_1.jsonl
+          --output artifacts/gremlin_receipts.jsonl
+      - name: Verify exact receipt coverage and digest
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          path = Path('artifacts/gremlin_receipts.jsonl')
+          rows = [json.loads(x) for x in path.read_text(encoding='utf-8').splitlines() if x.strip()]
+          assert len(rows) == 60
+          assert len({row['task_id'] for row in rows}) == 60
+          digest = hashlib.sha256(path.read_bytes()).hexdigest()
+          expected = 'c6167a581d76e3c52376cbef91fc4b1779eb430d3bc5fa8250cf7c7f2e7393f7'
+          assert digest == expected, (digest, expected)
+          print('GREMLIN receipt coverage: 60/60')
+          print('GREMLIN receipt SHA-256:', digest)
+          PY
+      - name: Verify materialized benchmark inputs
+        run: |
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          dataset = Path('dataset/golden_v0_1.jsonl')
+          assert len([x for x in dataset.read_text(encoding='utf-8').splitlines() if x.strip()]) == 60
+          print('dataset_sha256', hashlib.sha256(dataset.read_bytes()).hexdigest())
+          for path in (
+              Path('prompts/b0_direct.txt'),
+              Path('prompts/b1_b3_structured.txt'),
+              Path('prompts/b2_b4_research_structured.txt'),
+          ):
+              print(path, hashlib.sha256(path.read_bytes()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-materialized-runtime-${{ github.sha }}
+          path: |
+            artifacts/gremlin_receipts.jsonl
+            dataset/golden_v0_1.jsonl
+            prompts/b0_direct.txt
+            prompts/b1_b3_structured.txt
+            prompts/b2_b4_research_structured.txt
+            COMPONENT_PINS_V0_1.json
+            VALIDATED_ARTIFACTS_V0_1.json
+            pyproject.toml
+            src/ciel_gremlin_benchmark/
+          if-no-files-found: error

@@ -1,0 +1,46 @@
+{
+  "schema": "CIEL_GREMLIN_VALIDATED_ARTIFACTS_V0_1",
+  "observed_at": "2026-08-30",
+  "gremlin_receipt_bundle": {
+    "status": "PASS",
+    "repository": "AdrianLipa90/GREMLIN",
+    "branch": "feat/benchmark-supplied-evidence-v0.1",
+    "head_sha": "69f4670f1b4c618a964d2e246987aa8de6d61b09",
+    "pr": 44,
+    "workflow_run_id": 33299763706,
+    "job_id": 99225549065,
+    "hosted_test_count": 43,
+    "benchmark_commit": "6f4496c451d7ce4935678cc92df49f4e0920cc31",
+    "task_count": 60,
+    "bundle_sha256": "c6167a581d76e3c52376cbef91fc4b1779eb430d3bc5fa8250cf7c7f2e7393f7",
+    "artifact_id": 9728536601,
+    "artifact_name": "gremlin-benchmark-receipts-69f4670f1b4c618a964d2e246987aa8de6d61b09",
+    "artifact_zip_sha256": "07b7becdc38c5854c38cbcfd9366e706619ab3000b43e61eaae7f036d41c23b0",
+    "authority_violations": 0,
+    "status_counts": {
+      "NO_EVIDENCE_FAIL_CLOSED": 51,
+      "CANDIDATE_SYNTHESIS_READY": 9
+    }
+  },
+  "cielingo_component_gate": {
+    "status": "INFRA_FAILURE_BEFORE_STEPS",
+    "repository": "AdrianLipa90/cielingo-canon",
+    "head_sha": "43375f58d46ca99ed6e8536fc65ceb02816f5c3e",
+    "pr": 18,
+    "workflow_run_id": 33299470285,
+    "rerun_requested": true,
+    "steps_observed": false,
+    "code_failure_established": false
+  },
+  "ciel_semantic_component_gate": {
+    "status": "INFRA_FAILURE_BEFORE_STEPS",
+    "repository": "AdrianLipa90/Ciel-Semantic-Model-",
+    "head_sha": "67157523badc1460eefc18f75b75ff20500dcbc3",
+    "pr": 27,
+    "workflow_run_id": 33299490269,
+    "rerun_requested": true,
+    "steps_observed": false,
+    "code_failure_established": false
+  },
+  "reporting_status": "EXPLORATORY_ONLY_PENDING_EXECUTED_FULL_CIEL_COMPONENT_GATES"
+}

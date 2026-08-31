@@ -1,0 +1,45 @@
+{
+  "schema": "CIEL_GREMLIN_COMPONENT_PINS_V0_1",
+  "observed_at": "2026-08-30",
+  "components": {
+    "gremlin": {
+      "repository": "AdrianLipa90/GREMLIN",
+      "branch": "feat/benchmark-supplied-evidence-v0.1",
+      "commit": "69f4670f1b4c618a964d2e246987aa8de6d61b09",
+      "pr": 44,
+      "status": "CI_43_PASS_RECEIPTS_60_PASS_MERGEABLE_DRAFT"
+    },
+    "cielingo": {
+      "repository": "AdrianLipa90/cielingo-canon",
+      "branch": "feat/action-scope-condition-receipt-v0.1",
+      "commit": "0d71838744def88fb148ce72c82d60fa6f66ca8b",
+      "pr": 23,
+      "lineage_prs": [20, 21, 23],
+      "status": "STACKED_DRAFT_MERGEABLE_CARD_ID_ACTION_SIGNATURE_SCOPE_RECEIPT_ISOLATED_PASS_FULL_SUITE_UNTESTED"
+    },
+    "ciel_semantic": {
+      "repository": "AdrianLipa90/Ciel-Semantic-Model-",
+      "branch": "feat/action-scope-condition-gate-v0.1",
+      "commit": "883276ec4b11d8d137e3aa00f581d7642454948a",
+      "pr": 33,
+      "lineage_prs": [29, 30, 33],
+      "status": "STACKED_DRAFT_MERGEABLE_CARD_ID_GROUNDING_ACTION_MIRROR_INDEPENDENT_SCOPE_GATE_ISOLATED_PASS_FULL_SUITE_UNTESTED"
+    }
+  },
+  "execution_path": {
+    "producer": "RegionalSolveResult.candidates.card_id -> RelationEntityCardBindings -> typed action relation -> ActionScopeConditionReceipt",
+    "consumer": "exact hypergraph/card receipt validation -> card_id grounding -> independent scope recomputation -> ActionScopeGateReceipt",
+    "benchmark": "valid SCOPE_SAFE gate + RelationEntityGroundingBundle -> scope-gated execution argument bindings",
+    "slot_id_authority": false,
+    "surface_rescue_after_failed_producer_identity": false,
+    "producer_scope_authority": false,
+    "scope_safe_exact_agreement_required": true
+  },
+  "reporting_gate": {
+    "live_exploratory_run_allowed": true,
+    "reportable_v0_1_result_requires_full_component_suite": true,
+    "gremlin_hosted_ci": "PASS_43_TESTS_AND_60_RECEIPT_ARTIFACT",
+    "benchmark_scope_projection_ci": "PASS_PY311_PY312_PY313_ON_E9F42E2EA729D866387564AC7CAD157EE9F8B192",
+    "private_ciel_hosted_ci": "CURRENT_SCOPE_STACK_FULL_SUITE_UNTESTED; EARLIER_HOSTED_RUNS_FAILED_BEFORE_STEPS"
+  }
+}

@@ -1,0 +1,57 @@
+name: Materialize Terminal36D benchmark runtime v0.2
+
+on:
+  push:
+    branches:
+      - feat/ciel-world-state-grounding-v0.2
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact benchmark branch
+        uses: actions/checkout@v4
+
+      - name: Verify frozen golden dataset
+        run: |
+          python - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+          p = Path('dataset/golden_v0_1.jsonl')
+          got = sha256(p.read_bytes()).hexdigest()
+          expected = '6ad64afc4303ec2253a7e6d8f57f1ec4813b5dce1eaba1d6347f6767f6deee94'
+          print({'dataset_sha256': got, 'expected': expected})
+          if got != expected:
+              raise SystemExit('golden dataset fingerprint mismatch')
+          PY
+
+      - name: Build runtime materialization directory
+        run: |
+          mkdir -p terminal36d_runtime_v02
+          cp dataset/golden_v0_1.jsonl terminal36d_runtime_v02/
+          cp pyproject.toml terminal36d_runtime_v02/
+          cp -R src terminal36d_runtime_v02/src
+          cp -R prompts terminal36d_runtime_v02/prompts
+          python - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+          import json
+          root = Path('terminal36d_runtime_v02')
+          rows = []
+          for p in sorted(x for x in root.rglob('*') if x.is_file()):
+              rows.append({'path': p.relative_to(root).as_posix(), 'sha256': sha256(p.read_bytes()).hexdigest()})
+          (root / 'MATERIALIZATION_MANIFEST.json').write_text(
+              json.dumps({'schema':'CIEL_GREMLIN_TERMINAL36D_RUNTIME_V0_2','files':rows}, sort_keys=True, separators=(',',':'))+'\n',
+              encoding='utf-8'
+          )
+          PY
+
+      - name: Upload Terminal36D runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: ciel-gremlin-terminal36d-runtime-v02
+          path: terminal36d_runtime_v02
+          if-no-files-found: error
