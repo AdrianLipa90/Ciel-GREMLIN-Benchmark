@@ -9,7 +9,7 @@ on:
       - '.github/workflows/benchmark-dynamic-gate-ci.yml'
   push:
     branches:
-      - feat/benchmark-v0.1
+      - main
 
 permissions:
   contents: read
